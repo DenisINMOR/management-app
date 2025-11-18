@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle - Black -->
+  <circle cx="32" cy="32" r="31" fill="#000000" stroke="#00BFFF" stroke-width="2"/>
+  
+  <!-- Second ring - Azure -->
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#00BFFF" stroke-width="2"/>
+  
+  <!-- Third ring - Black -->
+  <circle cx="32" cy="32" r="15" fill="#000000" stroke="#00BFFF" stroke-width="2"/>
+  
+  <!-- Fourth ring - Azure -->
+  <circle cx="32" cy="32" r="7" fill="none" stroke="#00BFFF" stroke-width="2"/>
+  
+  <!-- Center dot -->
+  <circle cx="32" cy="32" r="3" fill="#000000" stroke="#00BFFF" stroke-width="1"/>
+  
+  <!-- Cross lines -->
+  <line x1="32" y1="4" x2="32" y2="60" stroke="#00BFFF" stroke-width="2"/>
+  <line x1="4" y1="32" x2="60" y2="32" stroke="#00BFFF" stroke-width="2"/>
+  
+  <!-- Inner cross lines -->
+  <line x1="32" y1="12" x2="32" y2="52" stroke="#000000" stroke-width="1"/>
+  <line x1="12" y1="32" x2="52" y2="32" stroke="#000000" stroke-width="1"/>
+</svg>

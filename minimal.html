@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Минимальная версия - Подготовка к сессии</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #00BFFF, #1E90FF);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        .discipline-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .exam-type {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .exam {
+            background: #ff6b6b;
+        }
+        .credit {
+            background: #4ecdc4;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .modes {
+            margin-top: 15px;
+        }
+        .mode-btn {
+            background: white;
+            color: #00BFFF;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .mode-btn:hover {
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Подготовка к сессии НГТУ</h1>
+            <p>Минимальная рабочая версия</p>
+        </div>
+        
+        <div id="main-content">
+            <div id="dashboard">
+                <h2>📚 Выберите дисциплину:</h2>
+                <div id="disciplines-list"></div>
+            </div>
+            
+            <div id="discipline-detail" style="display: none;">
+                <button class="back-btn" onclick="showDashboard()">← Назад</button>
+                <div id="discipline-info"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Базовая структура данных дисциплин
+        const DISCIPLINES = {
+            lean_production: {
+                name: 'Инструменты бережливого производства: практика внедрения',
+                shortName: 'Бережливое производство',
+                examType: 'credit',
+                icon: '🏭'
+            },
+            internet_marketing: {
+                name: 'Конкурентоспособность бизнеса: инструменты интернет-маркетинга',
+                shortName: 'Интернет-маркетинг',
+                examType: 'exam',
+                icon: '📱'
+            },
+            business_analytics: {
+                name: 'Бизнес-аналитика: теория и практика',
+                shortName: 'Бизнес-аналитика',
+                examType: 'credit',
+                icon: '📊'
+            },
+            digital_transformation: {
+                name: 'Цифровая трансформация бизнеса',
+                shortName: 'Цифровая трансформация',
+                examType: 'exam',
+                icon: '💻'
+            }
+        };
+
+        // Сохранение данных в localStorage
+        const STORAGE = {
+            key: 'session_prep_data',
+            
+            save() {
+                localStorage.setItem(this.key, JSON.stringify({
+                    lastVisit: new Date().toISOString(),
+                    visited: []
+                }));
+            },
+            
+            get() {
+                try {
+                    const data = localStorage.getItem(this.key);
+                    return data ? JSON.parse(data) : { visited: [] };
+                } catch (e) {
+                    return { visited: [] };
+                }
+            },
+            
+            markVisited(disciplineId) {
+                const data = this.get();
+                if (!data.visited.includes(disciplineId)) {
+                    data.visited.push(disciplineId);
+                    this.save();
+                }
+            }
+        };
+
+        // Инициализация
+        function init() {
+            console.log('🚀 Инициализация минимальной версии...');
+            
+            // Инициализация storage
+            if (!localStorage.getItem(STORAGE.key)) {
+                STORAGE.save();
+            }
+            
+            // Загрузка dashboard
+            showDashboard();
+            
+            console.log('✅ Минимальная версия готова!');
+        }
+
+        // Показать список дисциплин
+        function showDashboard() {
+            const content = document.getElementById('main-content');
+            const storage = STORAGE.get();
+            
+            let html = `
+                <h2>📚 Выберите дисциплину:</h2>
+                ${Object.entries(DISCIPLINES).map(([id, disc]) => {
+                    const visited = storage.visited.includes(id);
+                    const typeClass = disc.examType === 'exam' ? 'exam' : 'credit';
+                    const typeText = disc.examType === 'exam' ? 'ЭКЗАМЕН' : 'ЗАЧЕТ';
+                    
+                    return `
+                        <div class="card" onclick="showDiscipline('${id}')">
+                            <div class="discipline-title">${disc.icon} ${disc.shortName}</div>
+                            <span class="exam-type ${typeClass}">${typeText}</span>
+                            <p>${visited ? '✅ Изучалась' : '📖 Готова к изучению'}</p>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+            
+            content.innerHTML = html;
+        }
+
+        // Показать детали дисциплины
+        function showDiscipline(disciplineId) {
+            const disc = DISCIPLINES[disciplineId];
+            if (!disc) return;
+            
+            // Отмечаем как изученную
+            STORAGE.markVisited(disciplineId);
+            
+            const content = document.getElementById('main-content');
+            const typeClass = disc.examType === 'exam' ? 'exam' : 'credit';
+            const typeText = disc.examType === 'exam' ? 'ЭКЗАМЕН' : 'ЗАЧЕТ';
+            
+            let html = `
+                <button class="back-btn" onclick="showDashboard()">← Назад</button>
+                <div class="card">
+                    <div class="discipline-title">${disc.icon} ${disc.name}</div>
+                    <span class="exam-type ${typeClass}">${typeText}</span>
+                    
+                    <div class="modes">
+                        <h3>Выберите режим изучения:</h3>
+                        <button class="mode-btn" onclick="showCards('${disciplineId}')">
+                            🔄 Карточки
+                        </button>
+                        <button class="mode-btn" onclick="showMatching('${disciplineId}')">
+                            🔗 Соответствия
+                        </button>
+                        <button class="mode-btn" onclick="showTheory('${disciplineId}')">
+                            📚 Теория
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+
+        // Заглушки для режимов изучения
+        function showCards(disciplineId) {
+            alert(`🔄 Карточки для дисциплины "${DISCIPLINES[disciplineId].shortName}"\n\nЭта функция будет реализована в полной версии.`);
+        }
+
+        function showMatching(disciplineId) {
+            alert(`🔗 Игра на соответствие для дисциплины "${DISCIPLINES[disciplineId].shortName}"\n\nЭта функция будет реализована в полной версии.`);
+        }
+
+        function showTheory(disciplineId) {
+            alert(`📚 Теоретический материал для дисциплины "${DISCIPLINES[disciplineId].shortName}"\n\nЭта функция будет реализована в полной версии.`);
+        }
+
+        // Запуск при загрузке страницы
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Также запускаем если DOM уже загружен
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

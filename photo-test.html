@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖼️ Тест загрузки фото</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .demo-section {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 4px solid #00BFFF;
+        }
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--red-primary);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid white;
+            cursor: pointer;
+            margin: 20px auto;
+            transition: all 0.3s ease;
+        }
+        .user-avatar:hover .avatar-overlay {
+            opacity: 1;
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+        .user-letter {
+            font-size: 36px;
+            font-weight: 600;
+            color: white;
+            z-index: 1;
+        }
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: white;
+        }
+        .test-button {
+            background: #00BFFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+        }
+        .test-button:hover { background: #0099CC; }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #333;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        .photo-preview {
+            margin: 20px 0;
+        }
+        .photo-preview img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #00BFFF;
+        }
+        .log {
+            font-family: monospace;
+            font-size: 12px;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Тестирование загрузки фото</h1>
+        
+        <div class="demo-section">
+            <h3>👤 Ваш профиль</h3>
+            <p>Нажмите на аватар для загрузки фото</p>
+            
+            <!-- User Avatar (как в основном приложении) -->
+            <div class="user-avatar" id="user-avatar-demo">
+                <img id="user-photo-demo" style="display: none;" alt="Фото пользователя">
+                <span id="user-letter-demo" class="user-letter">Н</span>
+                <div class="avatar-overlay" id="avatar-overlay-demo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="test-button" onclick="openPhotoModal()">🖼️ Управление фото</button>
+                <button class="test-button" onclick="testPhotoUpload()">📁 Загрузить тестовое фото</button>
+                <button class="test-button" onclick="removePhoto()">🗑️ Удалить фото</button>
+                <button class="test-button" onclick="clearLog()">🧹 Очистить лог</button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>📋 Функциональность:</h3>
+            <ul>
+                <li>✅ Нажмите на аватар для открытия модального окна</li>
+                <li>✅ Загрузка изображений (JPG, PNG, GIF)</li>
+                <li>✅ Ограничение размера файла (5MB)</li>
+                <li>✅ Сохранение в LocalStorage</li>
+                <li>✅ Отображение в боковом меню</li>
+                <li>✅ Возможность удаления фото</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3>📊 Журнал событий:</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <!-- Photo Modal -->
+    <div class="modal" id="photo-modal-demo">
+        <div class="modal-content">
+            <h2>🖼️ Управление фото</h2>
+            
+            <div class="photo-preview" id="photo-preview-demo">
+                <img id="current-photo-demo" style="display: none;" alt="Текущее фото">
+                <p id="no-photo-demo">Фото не загружено</p>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="test-button" onclick="uploadPhoto()">📤 Загрузить фото</button>
+                <button class="test-button" onclick="removePhoto()" id="remove-btn-demo" style="display: none;">🗑️ Удалить</button>
+            </div>
+            
+            <p style="font-size: 12px; margin-top: 15px; opacity: 0.8;">
+                Поддерживаемые форматы: JPG, PNG, GIF<br>
+                Максимальный размер: 5MB
+            </p>
+            
+            <button class="test-button" onclick="closePhotoModal()" style="margin-top: 15px;">❌ Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="photo-input-demo" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
+
+    <script>
+        let logEntries = [];
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logEntries.push(`[${timestamp}] ${message}`);
+            document.getElementById('log').textContent = logEntries.join('\n');
+            document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('log').textContent = '';
+            addLog('Журнал очищен', 'info');
+        }
+
+        function displayPhoto(photoData) {
+            const userPhoto = document.getElementById('user-photo-demo');
+            const userLetter = document.getElementById('user-letter-demo');
+            const currentPhoto = document.getElementById('current-photo-demo');
+            const removeBtn = document.getElementById('remove-btn-demo');
+            const noPhotoText = document.getElementById('no-photo-demo');
+            
+            if (userPhoto && userLetter) {
+                userPhoto.src = photoData;
+                userPhoto.style.display = 'block';
+                userLetter.style.display = 'none';
+            }
+            
+            if (currentPhoto) {
+                currentPhoto.src = photoData;
+                currentPhoto.style.display = 'block';
+                noPhotoText.style.display = 'none';
+            }
+            
+            if (removeBtn) removeBtn.style.display = 'block';
+            
+            addLog('✅ Фото отображено в интерфейсе', 'success');
+        }
+
+        function showLetter() {
+            const userPhoto = document.getElementById('user-photo-demo');
+            const userLetter = document.getElementById('user-letter-demo');
+            const currentPhoto = document.getElementById('current-photo-demo');
+            const removeBtn = document.getElementById('remove-btn-demo');
+            const noPhotoText = document.getElementById('no-photo-demo');
+            
+            if (userPhoto && userLetter) {
+                userPhoto.style.display = 'none';
+                userLetter.style.display = 'block';
+            }
+            
+            if (currentPhoto) {
+                currentPhoto.style.display = 'none';
+                noPhotoText.style.display = 'block';
+            }
+            
+            if (removeBtn) removeBtn.style.display = 'none';
+            
+            addLog('✅ Отображается буква вместо фото', 'info');
+        }
+
+        function openPhotoModal() {
+            const modal = document.getElementById('photo-modal-demo');
+            modal.classList.add('active');
+            addLog('🖼️ Модальное окно открыто', 'info');
+            
+            // Проверяем, есть ли сохраненное фото
+            const savedPhoto = localStorage.getItem('demo_user_photo');
+            if (savedPhoto) {
+                displayPhoto(savedPhoto);
+            } else {
+                showLetter();
+            }
+        }
+
+        function closePhotoModal() {
+            const modal = document.getElementById('photo-modal-demo');
+            modal.classList.remove('active');
+            addLog('❌ Модальное окно закрыто', 'info');
+        }
+
+        function uploadPhoto() {
+            const photoInput = document.getElementById('photo-input-demo');
+            photoInput.click();
+            addLog('📁 Открыт диалог выбора файла', 'info');
+        }
+
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            addLog(`📄 Выбран файл: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`, 'info');
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                addLog('❌ Неподдерживаемый формат файла', 'error');
+                alert('❌ Пожалуйста, выберите файл изображения (JPG, PNG, GIF)');
+                return;
+            }
+
+            // Validate file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                addLog('❌ Файл слишком большой', 'error');
+                alert('❌ Размер файла не должен превышать 5MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const photoData = e.target.result;
+                
+                // Save to localStorage
+                localStorage.setItem('demo_user_photo', photoData);
+                
+                // Display in UI
+                displayPhoto(photoData);
+                
+                addLog('✅ Фото успешно загружено и сохранено!', 'success');
+                closePhotoModal();
+                alert('✅ Фото успешно загружено!');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removePhoto() {
+            localStorage.removeItem('demo_user_photo');
+            showLetter();
+            addLog('🗑️ Фото удалено', 'info');
+            closePhotoModal();
+            alert('✅ Фото удалено!');
+        }
+
+        function testPhotoUpload() {
+            // Создаем тестовое изображение
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            
+            // Рисуем градиентный фон
+            const gradient = ctx.createLinearGradient(0, 0, 200, 200);
+            gradient.addColorStop(0, '#00BFFF');
+            gradient.addColorStop(1, '#1E90FF');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 200, 200);
+            
+            // Добавляем текст
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('TEST', 100, 100);
+            ctx.font = '16px Arial';
+            ctx.fillText('Фото', 100, 120);
+            
+            const photoData = canvas.toDataURL('image/png');
+            localStorage.setItem('demo_user_photo', photoData);
+            displayPhoto(photoData);
+            
+            addLog('🧪 Тестовое фото создано', 'success');
+        }
+
+        // Загружаем сохраненное фото при загрузке страницы
+        window.addEventListener('load', () => {
+            const savedPhoto = localStorage.getItem('demo_user_photo');
+            if (savedPhoto) {
+                displayPhoto(savedPhoto);
+                addLog('📸 Сохраненное фото загружено', 'success');
+            } else {
+                addLog('💡 Нажмите на аватар для загрузки фото', 'info');
+            }
+        });
+
+        // Обработчик клика по аватару
+        document.getElementById('user-avatar-demo').addEventListener('click', openPhotoModal);
+        
+        // Закрытие модала по клику на фон
+        document.getElementById('photo-modal-demo').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closePhotoModal();
+            }
+        });
+    </script>
+</body>
+</html>

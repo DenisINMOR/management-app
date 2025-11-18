@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест инициализации</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f0f0f0;
+        }
+        .test-container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+        }
+        .target-logo {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+        }
+        .circle {
+            position: absolute;
+            border: 3px solid #00BFFF;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+        }
+        .circle-1 {
+            width: 20px;
+            height: 20px;
+            top: 0;
+            left: 0;
+            animation-delay: 0s;
+        }
+        .circle-2 {
+            width: 40px;
+            height: 40px;
+            top: 20px;
+            left: 20px;
+            animation-delay: 0.3s;
+        }
+        .circle-3 {
+            width: 60px;
+            height: 60px;
+            top: 10px;
+            left: 10px;
+            animation-delay: 0.6s;
+        }
+        .target-center {
+            width: 10px;
+            height: 10px;
+            background: #00BFFF;
+            border-radius: 50%;
+            position: absolute;
+            top: 35px;
+            left: 35px;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 0.3; }
+            100% { transform: scale(0.8); opacity: 0.7; }
+        }
+        .loading-text {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .app-container {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .log-entry {
+            padding: 5px;
+            margin: 2px 0;
+            border-left: 3px solid #ddd;
+            padding-left: 10px;
+        }
+        .log-entry.success { border-left-color: #28a745; }
+        .log-entry.error { border-left-color: #dc3545; }
+        .log-entry.info { border-left-color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="target-logo">
+            <div class="circle circle-1"></div>
+            <div class="circle circle-2"></div>
+            <div class="circle circle-3"></div>
+            <div class="target-center"></div>
+        </div>
+        <p class="loading-text">Загрузка теста...</p>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="app-container">
+        <h1>✅ Тест инициализации пройден!</h1>
+        <p>Если вы видите этот текст, то инициализация работает правильно.</p>
+        
+        <div class="test-container">
+            <h3>Журнал тестирования:</h3>
+            <div id="log-container"></div>
+        </div>
+    </div>
+
+    <script>
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('log-container');
+            if (logContainer) {
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry ${type}`;
+                const timestamp = new Date().toLocaleTimeString();
+                logEntry.textContent = `[${timestamp}] ${message}`;
+                logContainer.appendChild(logEntry);
+            }
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function testAppInit() {
+            addLog('🚀 Тест инициализации запущен', 'info');
+            
+            // Проверяем DOM
+            const loadingScreen = document.getElementById('loading-screen');
+            const app = document.getElementById('app');
+            
+            if (!loadingScreen) {
+                addLog('❌ loading-screen НЕ НАЙДЕН!', 'error');
+                return false;
+            } else {
+                addLog('✅ loading-screen найден', 'success');
+            }
+            
+            if (!app) {
+                addLog('❌ app НЕ НАЙДЕН!', 'error');
+                return false;
+            } else {
+                addLog('✅ app найден', 'success');
+            }
+            
+            // Запускаем инициализацию
+            addLog('🔧 Запускаем инициализацию через 2 секунды...', 'info');
+            
+            setTimeout(() => {
+                try {
+                    addLog('🔧 Выполняем инициализацию...', 'info');
+                    
+                    // Скрываем экран загрузки
+                    if (loadingScreen) {
+                        loadingScreen.style.display = 'none';
+                        addLog('✅ Экран загрузки скрыт', 'success');
+                    }
+                    
+                    // Показываем приложение
+                    if (app) {
+                        app.style.display = 'block';
+                        addLog('✅ Приложение показано', 'success');
+                    }
+                    
+                    addLog('🎉 Инициализация завершена успешно!', 'success');
+                    
+                } catch (error) {
+                    addLog(`❌ Ошибка инициализации: ${error.message}`, 'error');
+                }
+            }, 2000);
+            
+            return true;
+        }
+
+        // Запускаем тест при загрузке DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', testAppInit);
+        } else {
+            testAppInit();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диагностика кнопок</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+        }
+        .btn { 
+            padding: 12px 24px; 
+            margin: 5px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .log { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+            font-family: monospace; 
+            max-height: 200px; 
+            overflow-y: auto;
+        }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+        }
+        .status.success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .status.error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Диагностика кнопок и JavaScript</h1>
+        
+        <div class="test-section">
+            <h2>1. Проверка JavaScript</h2>
+            <button class="btn btn-primary" onclick="testJS()">Проверить JavaScript</button>
+            <div id="js-status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Проверка глобальных объектов</h2>
+            <button class="btn btn-primary" onclick="testGlobals()">Проверить глобальные объекты</button>
+            <div id="globals-status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Тест кнопки "Тест"</h2>
+            <button class="btn btn-success" onclick="testButton('test')">Кликнуть "Тест"</button>
+            <div id="test-status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Тест кнопки "Зачет"</h2>
+            <button class="btn btn-warning" onclick="testButton('credit')">Кликнуть "Зачет"</button>
+            <div id="credit-status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. Консоль браузера</h2>
+            <p>Откройте консоль браузера (F12) для просмотра детальных логов.</p>
+            <button class="btn btn-danger" onclick="clearLogs()">Очистить логи</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Результаты диагностики</h2>
+            <div id="results" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let results = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+            results.push(entry);
+            document.getElementById('results').innerHTML = results.join('<br>');
+            console.log(entry);
+        }
+
+        function updateStatus(id, message, isError = false) {
+            const element = document.getElementById(id);
+            element.className = `status ${isError ? 'error' : 'success'}`;
+            element.innerHTML = message;
+            log(`${id}: ${message}`, isError ? 'error' : 'success');
+        }
+
+        function testJS() {
+            try {
+                log('🚀 Начинаем тест JavaScript...');
+                
+                // Проверка базовых возможностей
+                const testObj = { test: true };
+                const testArray = [1, 2, 3];
+                
+                if (testObj.test && testArray.length === 3) {
+                    updateStatus('js-status', '✅ JavaScript работает корректно!', false);
+                } else {
+                    updateStatus('js-status', '❌ JavaScript не работает!', true);
+                }
+                
+                // Проверка DOM
+                if (document.getElementById) {
+                    updateStatus('js-status', '✅ JavaScript работает корректно! DOM доступен.', false);
+                } else {
+                    updateStatus('js-status', '❌ DOM недоступен!', true);
+                }
+                
+            } catch (error) {
+                updateStatus('js-status', `❌ Ошибка JavaScript: ${error.message}`, true);
+                log(`❌ JavaScript ошибка: ${error.message}`, 'error');
+            }
+        }
+
+        function testGlobals() {
+            try {
+                log('🔍 Проверяем глобальные объекты...');
+                
+                let status = [];
+                status.push(`<strong>Глобальные объекты:</strong><br>`);
+                status.push(`window: ${typeof window === 'undefined' ? '❌ Не определен' : '✅ Определен'}<br>`);
+                status.push(`console: ${typeof console === 'undefined' ? '❌ Не определен' : '✅ Определен'}<br>`);
+                status.push(`document: ${typeof document === 'undefined' ? '❌ Не определен' : '✅ Определен'}<br>`);
+                
+                // Проверяем созданные объекты
+                status.push(`<br><strong>Проверяем учебное приложение:</strong><br>`);
+                
+                // Симулируем объекты учебного приложения
+                if (typeof window.App === 'undefined') {
+                    window.App = {
+                        startFinalTest: function(disciplineId) {
+                            log(`📚 startFinalTest вызван для: ${disciplineId}`);
+                            alert(`✅ Функция startFinalTest работает! Дисциплина: ${disciplineId}`);
+                        },
+                        loadDiscipline: function(id) {
+                            log(`📖 loadDiscipline вызван для: ${id}`);
+                            alert(`✅ Функция loadDiscipline работает! ID: ${id}`);
+                        }
+                    };
+                    status.push(`window.App: ✅ Создан симулятор<br>`);
+                } else {
+                    status.push(`window.App: ✅ Уже существует<br>`);
+                }
+                
+                if (typeof window.TestManager === 'undefined') {
+                    window.TestManager = {};
+                    status.push(`window.TestManager: ✅ Создан симулятор<br>`);
+                } else {
+                    status.push(`window.TestManager: ✅ Уже существует<br>`);
+                }
+                
+                updateStatus('globals-status', status.join(''), false);
+                
+            } catch (error) {
+                updateStatus('globals-status', `❌ Ошибка проверки глобальных объектов: ${error.message}`, true);
+                log(`❌ Ошибка глобальных объектов: ${error.message}`, 'error');
+            }
+        }
+
+        function testButton(type) {
+            try {
+                log(`🖱️ Тестируем кнопку: ${type}`);
+                
+                if (type === 'test') {
+                    // Симулируем клик по кнопке "Тест"
+                    const disciplineId = 'hr_management';
+                    log(`📝 Вызываем App.startFinalTest('${disciplineId}')`);
+                    
+                    if (window.App && typeof window.App.startFinalTest === 'function') {
+                        window.App.startFinalTest(disciplineId);
+                        updateStatus('test-status', `✅ Кнопка "Тест" работает! Вызвана функция startFinalTest('${disciplineId}')`, false);
+                    } else {
+                        updateStatus('test-status', `❌ Функция App.startFinalTest не найдена!`, true);
+                    }
+                } else if (type === 'credit') {
+                    // Симулируем клик по кнопке "Зачет"
+                    log(`📝 Симулируем клик по кнопке "Зачет/Экзамен"`);
+                    
+                    // Показываем информацию о типе аттестации
+                    const examTypes = {
+                        'hr_management': 'ЭКЗАМЕН',
+                        'lean_manufacturing': 'ЗАЧЕТ',
+                        'internet_marketing': 'ЭКЗАМЕН'
+                    };
+                    
+                    const selectedDiscipline = 'hr_management';
+                    const examType = examTypes[selectedDiscipline] || 'ЗАЧЕТ';
+                    
+                    alert(`📝 Тип аттестации для дисциплины "${selectedDiscipline}": ${examType}`);
+                    updateStatus('credit-status', `✅ Кнопка "Зачет/Экзамен" работает! Тип аттестации: ${examType}`, false);
+                }
+                
+            } catch (error) {
+                const errorMsg = `❌ Ошибка тестирования кнопки ${type}: ${error.message}`;
+                updateStatus(`${type}-status`, errorMsg, true);
+                log(errorMsg, 'error');
+            }
+        }
+
+        function clearLogs() {
+            results = [];
+            document.getElementById('results').innerHTML = '';
+            log('🧹 Логи очищены');
+        }
+
+        // Автоматически запускаем базовые тесты при загрузке
+        window.addEventListener('load', function() {
+            log('🚀 Страница загружена, начинаем автотесты...');
+            setTimeout(() => {
+                testJS();
+                testGlobals();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

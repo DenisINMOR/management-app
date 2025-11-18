@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Финальный тест приложения</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #00BFFF, #1E90FF);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .test-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .test-card h3 {
+            margin-top: 0;
+            color: white;
+        }
+        button {
+            background: white;
+            color: #00BFFF;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        button.success {
+            background: #28a745;
+            color: white;
+        }
+        button.error {
+            background: #dc3545;
+            color: white;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .loading {
+            background: rgba(255,193,7,0.8);
+            color: #000;
+        }
+        .success {
+            background: rgba(40,167,69,0.8);
+        }
+        .error {
+            background: rgba(220,53,69,0.8);
+        }
+        .info {
+            background: rgba(0,123,255,0.8);
+        }
+        .console {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .console-line {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+        .console-success { color: #28a745; }
+        .console-error { color: #dc3545; }
+        .console-info { color: #17a2b8; }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Финальный тест приложения подготовки к сессии</h1>
+            <p>Проверяем работоспособность всех компонентов</p>
+        </div>
+        
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>🧪 Тесты компонентов</h3>
+                <button onclick="testBasic()">Тест 1: Базовая загрузка</button>
+                <button onclick="testData()">Тест 2: Данные дисциплин</button>
+                <button onclick="testStorage()">Тест 3: LocalStorage</button>
+                <button onclick="testApp()">Тест 4: Основное приложение</button>
+                <button onclick="testMinimal()">Тест 5: Минимальная версия</button>
+            </div>
+            
+            <div class="test-card">
+                <h3>🚀 Запуск приложений</h3>
+                <button onclick="launchMain()">Основное приложение</button>
+                <button onclick="launchMinimal()">Минимальная версия</button>
+                <button onclick="launchDiagnostic()">Диагностика</button>
+                <button onclick="launchSimpleTest()">Простой тест</button>
+                <button onclick="clearConsole()">Очистить логи</button>
+            </div>
+        </div>
+        
+        <div id="overall-status" class="status loading">
+            ⏳ Система готова к тестированию. Нажмите кнопки для проверки.
+        </div>
+        
+        <div class="test-card">
+            <h3>📊 Результаты тестов</h3>
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-card">
+            <h3>💻 Консоль приложения</h3>
+            <div id="app-console" class="console"></div>
+        </div>
+        
+        <div class="test-card">
+            <h3>🖥️ Предпросмотр приложения</h3>
+            <div id="app-preview" style="display: none;">
+                <iframe id="app-iframe"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const testResults = document.getElementById('test-results');
+        const consoleDiv = document.getElementById('app-console');
+        const statusDiv = document.getElementById('overall-status');
+        const previewDiv = document.getElementById('app-preview');
+        const iframe = document.getElementById('app-iframe');
+        
+        let testsPassed = 0;
+        let testsTotal = 0;
+        
+        function log(message, type = 'info') {
+            const line = document.createElement('div');
+            line.className = `console-line console-${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleDiv.appendChild(line);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function addTestResult(name, passed, message) {
+            const result = document.createElement('div');
+            result.className = `status ${passed ? 'success' : 'error'}`;
+            result.innerHTML = `${passed ? '✅' : '❌'} <strong>${name}</strong><br>${message}`;
+            testResults.appendChild(result);
+            
+            if (passed) testsPassed++;
+            testsTotal++;
+            updateOverallStatus();
+        }
+        
+        function updateOverallStatus() {
+            if (testsTotal === 0) {
+                statusDiv.className = 'status info';
+                statusDiv.textContent = '💡 Готов к тестированию';
+            } else if (testsPassed === testsTotal) {
+                statusDiv.className = 'status success';
+                statusDiv.textContent = `🎉 Все тесты пройдены! (${testsPassed}/${testsTotal})`;
+            } else {
+                statusDiv.className = 'status loading';
+                statusDiv.textContent = `🔄 Тестирование... (${testsPassed}/${testsTotal})`;
+            }
+        }
+        
+        function clearConsole() {
+            consoleDiv.innerHTML = '';
+            testResults.innerHTML = '';
+            testsPassed = 0;
+            testsTotal = 0;
+            updateOverallStatus();
+            log('🧹 Консоль очищена', 'info');
+        }
+        
+        async function testBasic() {
+            log('🚀 Запуск теста базовой загрузки...', 'info');
+            try {
+                await loadScript('js/data.js');
+                log('✅ data.js загружен', 'success');
+                
+                await loadScript('js/storage.js');
+                log('✅ storage.js загружен', 'success');
+                
+                await loadScript('js/games.js');
+                log('✅ games.js загружен', 'success');
+                
+                await loadScript('js/app.js');
+                log('✅ app.js загружен', 'success');
+                
+                addTestResult('Базовые компоненты', true, 'Все скрипты загружены успешно');
+                
+            } catch (error) {
+                log(`❌ Ошибка базовой загрузки: ${error.message}`, 'error');
+                addTestResult('Базовые компоненты', false, `Ошибка: ${error.message}`);
+            }
+        }
+        
+        async function testData() {
+            log('🗃️ Тестирование данных дисциплин...', 'info');
+            try {
+                if (typeof DISCIPLINES_DATA === 'undefined') {
+                    throw new Error('DISCIPLINES_DATA не найден');
+                }
+                
+                const disciplines = Object.keys(DISCIPLINES_DATA);
+                log(`📚 Найдено дисциплин: ${disciplines.length}`, 'success');
+                
+                for (const key of disciplines) {
+                    const disc = DISCIPLINES_DATA[key];
+                    if (!disc.flashcards) {
+                        log(`⚠️ В дисциплине ${disc.shortName} нет карточек`, 'error');
+                    }
+                }
+                
+                addTestResult('Данные дисциплин', true, `Найдено ${disciplines.length} дисциплин`);
+                
+            } catch (error) {
+                log(`❌ Ошибка данных: ${error.message}`, 'error');
+                addTestResult('Данные дисциплин', false, `Ошибка: ${error.message}`);
+            }
+        }
+        
+        async function testStorage() {
+            log('💾 Тестирование LocalStorage...', 'info');
+            try {
+                if (typeof StorageManager === 'undefined') {
+                    throw new Error('StorageManager не найден');
+                }
+                
+                StorageManager.init();
+                log('✅ StorageManager инициализирован', 'success');
+                
+                const progress = StorageManager.get(StorageManager.KEYS.PROGRESS);
+                if (!progress) {
+                    throw new Error('Не удалось получить прогресс');
+                }
+                
+                log(`📊 Прогресс загружен для ${Object.keys(progress).length} дисциплин`, 'success');
+                addTestResult('LocalStorage', true, 'Инициализация и доступ к данным успешны');
+                
+            } catch (error) {
+                log(`❌ Ошибка LocalStorage: ${error.message}`, 'error');
+                addTestResult('LocalStorage', false, `Ошибка: ${error.message}`);
+            }
+        }
+        
+        async function testApp() {
+            log('🎯 Тестирование основного приложения...', 'info');
+            try {
+                if (typeof App === 'undefined') {
+                    throw new Error('Объект App не найден');
+                }
+                
+                // Проверяем основные методы
+                const methods = ['init', 'loadPage', 'renderDashboard', 'setupEventListeners'];
+                for (const method of methods) {
+                    if (typeof App[method] !== 'function') {
+                        throw new Error(`Метод App.${method} не найден`);
+                    }
+                }
+                
+                log('✅ Все основные методы App найдены', 'success');
+                addTestResult('Основное приложение', true, 'Объект App инициализирован корректно');
+                
+            } catch (error) {
+                log(`❌ Ошибка приложения: ${error.message}`, 'error');
+                addTestResult('Основное приложение', false, `Ошибка: ${error.message}`);
+            }
+        }
+        
+        async function testMinimal() {
+            log('🏗️ Тестирование минимальной версии...', 'info');
+            try {
+                const response = await fetch('minimal.html');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const html = await response.text();
+                if (html.includes('Минимальная версия')) {
+                    log('✅ Файл minimal.html найден и содержит нужный контент', 'success');
+                    addTestResult('Минимальная версия', true, 'Файл готов к использованию');
+                } else {
+                    throw new Error('Контент файла не соответствует ожидаемому');
+                }
+                
+            } catch (error) {
+                log(`❌ Ошибка минимальной версии: ${error.message}`, 'error');
+                addTestResult('Минимальная версия', false, `Ошибка: ${error.message}`);
+            }
+        }
+        
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
+                document.head.appendChild(script);
+            });
+        }
+        
+        function launchMain() {
+            log('🚀 Запуск основного приложения...', 'info');
+            previewDiv.style.display = 'block';
+            iframe.src = 'index.html';
+            log('✅ Основное приложение загружено в iframe', 'success');
+        }
+        
+        function launchMinimal() {
+            log('🏗️ Запуск минимальной версии...', 'info');
+            previewDiv.style.display = 'block';
+            iframe.src = 'minimal.html';
+            log('✅ Минимальная версия загружена в iframe', 'success');
+        }
+        
+        function launchDiagnostic() {
+            log('🔍 Запуск диагностики...', 'info');
+            previewDiv.style.display = 'block';
+            iframe.src = 'debug-test.html';
+            log('✅ Диагностика загружена в iframe', 'success');
+        }
+        
+        function launchSimpleTest() {
+            log('🧪 Запуск простого теста...', 'info');
+            previewDiv.style.display = 'block';
+            iframe.src = 'simple-test.html';
+            log('✅ Простой тест загружен в iframe', 'success');
+        }
+        
+        // Автоматический запуск базового теста
+        setTimeout(() => {
+            log('🎯 Автоматически запускаем базовый тест...', 'info');
+            testBasic();
+        }, 1000);
+        
+        log('🎯 Система тестирования готова!', 'info');
+        updateOverallStatus();
+    </script>
+</body>
+</html>

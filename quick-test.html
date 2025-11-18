@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Быстрый тест загрузки</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 24px;
+        }
+        .app-container {
+            display: none;
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .test-button {
+            background: #00BFFF;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background: #0099CC;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: rgba(40, 167, 69, 0.8); }
+        .error { background: rgba(220, 53, 69, 0.8); }
+        .info { background: rgba(23, 162, 184, 0.8); }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        ⏳ Загрузка...
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="app-container">
+        <h1>🚀 Приложение загружено!</h1>
+        <div id="status" class="status success">✅ Все работает правильно</div>
+        
+        <button class="test-button" onclick="hideApp()">Скрыть приложение</button>
+        <button class="test-button" onclick="showApp()">Показать приложение</button>
+        <button class="test-button" onclick="testInit()">Перезапустить инициализацию</button>
+        
+        <div id="debug-info" style="margin-top: 20px; text-align: left; max-width: 400px;"></div>
+    </div>
+
+    <script>
+        let debugLog = [];
+        
+        function addDebugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.push(`[${timestamp}] ${message}`);
+            console.log(message);
+            updateDebugInfo();
+        }
+        
+        function updateDebugInfo() {
+            const debugDiv = document.getElementById('debug-info');
+            if (debugDiv) {
+                debugDiv.innerHTML = '<h3>Журнал событий:</h3>' + 
+                    debugLog.map(log => `<div style="margin: 2px 0; font-family: monospace; font-size: 12px;">${log}</div>`).join('');
+            }
+        }
+        
+        function testInit() {
+            debugLog = [];
+            addDebugLog('🚀 Запуск теста инициализации');
+            
+            const loadingScreen = document.getElementById('loading-screen');
+            const app = document.getElementById('app');
+            const status = document.getElementById('status');
+            
+            addDebugLog('🔍 Проверка элементов...');
+            
+            if (!loadingScreen) {
+                addDebugLog('❌ loading-screen НЕ НАЙДЕН!');
+                if (status) {
+                    status.className = 'status error';
+                    status.textContent = '❌ Ошибка: loading-screen не найден';
+                }
+                return;
+            } else {
+                addDebugLog('✅ loading-screen найден');
+            }
+            
+            if (!app) {
+                addDebugLog('❌ app НЕ НАЙДЕН!');
+                if (status) {
+                    status.className = 'status error';
+                    status.textContent = '❌ Ошибка: app не найден';
+                }
+                return;
+            } else {
+                addDebugLog('✅ app найден');
+            }
+            
+            addDebugLog('🔧 Скрываем loading-screen...');
+            loadingScreen.style.display = 'none';
+            addDebugLog('✅ loading-screen скрыт');
+            
+            addDebugLog('🔧 Показываем app...');
+            app.style.display = 'block';
+            addDebugLog('✅ app показан');
+            
+            if (status) {
+                status.className = 'status success';
+                status.textContent = '✅ Инициализация успешна!';
+            }
+            
+            addDebugLog('🎉 Тест завершен успешно');
+        }
+        
+        function hideApp() {
+            const app = document.getElementById('app');
+            const loadingScreen = document.getElementById('loading-screen');
+            const status = document.getElementById('status');
+            
+            if (app) app.style.display = 'none';
+            if (loadingScreen) loadingScreen.style.display = 'flex';
+            if (status) {
+                status.className = 'status info';
+                status.textContent = 'ℹ️ Приложение скрыто';
+            }
+            
+            addDebugLog('👆 Приложение скрыто пользователем');
+        }
+        
+        function showApp() {
+            const app = document.getElementById('app');
+            const loadingScreen = document.getElementById('loading-screen');
+            const status = document.getElementById('status');
+            
+            if (app) app.style.display = 'block';
+            if (loadingScreen) loadingScreen.style.display = 'none';
+            if (status) {
+                status.className = 'status success';
+                status.textContent = '✅ Приложение показано';
+            }
+            
+            addDebugLog('👆 Приложение показано пользователем');
+        }
+        
+        // Автоматический запуск при загрузке
+        window.addEventListener('load', () => {
+            addDebugLog('📱 Страница полностью загружена');
+            setTimeout(testInit, 1000);
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            addDebugLog('📄 DOM готов');
+        });
+    </script>
+</body>
+</html>

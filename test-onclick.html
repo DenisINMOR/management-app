@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест onclick</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .btn { 
+            padding: 15px 25px; 
+            margin: 10px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        .btn-test { background: #28a745; color: white; }
+        .btn-credit { background: #ffc107; color: black; }
+        .log { 
+            background: #f0f0f0; 
+            padding: 15px; 
+            margin: 20px 0; 
+            border-radius: 5px; 
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Тест кнопок onclick</h1>
+    
+    <p>Эти кнопки используют точно такой же onclick как в основном приложении:</p>
+    
+    <!-- Копия кнопки "Тест" из основного приложения -->
+    <button class="btn btn-test" onclick="App.startFinalTest('hr_management')">
+        ✅ Тест (как в приложении)
+    </button>
+    
+    <!-- Копия кнопки "Зачет" из основного приложения -->
+    <button class="btn btn-credit" onclick="alert('Тип аттестации: ЭКЗАМЕН')">
+        📝 Зачет/Экзамен (как в приложении)
+    </button>
+    
+    <div class="log" id="log">
+        <strong>Логи:</strong><br>
+        Страница загружена. Нажмите кнопки для тестирования.
+    </div>
+
+    <script>
+        // Создаем App объект как в основном приложении
+        window.App = {
+            startFinalTest: function(disciplineId) {
+                const log = document.getElementById('log');
+                const message = `✅ Кнопка "Тест" работает! Вызвана функция startFinalTest('${disciplineId}')`;
+                log.innerHTML += `<br>${new Date().toLocaleTimeString()}: ${message}`;
+                alert(message);
+            }
+        };
+        
+        // Проверяем при загрузке
+        window.addEventListener('load', function() {
+            const log = document.getElementById('log');
+            log.innerHTML += `<br>${new Date().toLocaleTimeString()}: window.App создан: ${typeof window.App}`;
+            log.innerHTML += `<br>${new Date().toLocaleTimeString()}: Функция startFinalTest: ${typeof window.App.startFinalTest}`;
+            log.innerHTML += `<br>${new Date().toLocaleTimeString()}: Готово к тестированию!`;
+        });
+    </script>
+</body>
+</html>

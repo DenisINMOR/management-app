@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Отладка загрузки</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f0f0f0; }
+        .log { margin: 5px 0; padding: 5px; border-left: 3px solid #007bff; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .warning { border-left-color: #ffc107; background: #fff3cd; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Отладка загрузки приложения</h1>
+    <div id="logs"></div>
+
+    <script>
+        const logs = document.getElementById('logs');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(div);
+            console.log(message);
+        }
+
+        log('🚀 Начинаем отладку...');
+
+        try {
+            log('📋 Загружаем файл data.js...');
+            
+            // Динамически создаем script теги
+            function loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
+                    document.head.appendChild(script);
+                });
+            }
+
+            async function loadScripts() {
+                try {
+                    log('📂 Загружаем data.js...');
+                    await loadScript('js/data.js');
+                    log('✅ data.js загружен успешно', 'success');
+                    
+                    log('📂 Загружаем storage.js...');
+                    await loadScript('js/storage.js');
+                    log('✅ storage.js загружен успешно', 'success');
+                    
+                    log('📂 Загружаем games.js...');
+                    await loadScript('js/games.js');
+                    log('✅ games.js загружен успешно', 'success');
+                    
+                    // Тестируем объекты
+                    log('🔍 Проверяем DISCIPLINES_DATA...');
+                    if (typeof DISCIPLINES_DATA !== 'undefined') {
+                        const count = Object.keys(DISCIPLINES_DATA).length;
+                        log(`✅ DISCIPLINES_DATA найден (${count} дисциплин)`, 'success');
+                    } else {
+                        log('❌ DISCIPLINES_DATA не найден!', 'error');
+                    }
+                    
+                    log('🔍 Проверяем StorageManager...');
+                    if (typeof StorageManager !== 'undefined') {
+                        log('✅ StorageManager найден', 'success');
+                        
+                        // Тестируем инициализацию
+                        try {
+                            log('🔧 Инициализируем StorageManager...');
+                            StorageManager.init();
+                            log('✅ StorageManager инициализирован', 'success');
+                            
+                            // Тестируем получение данных
+                            log('📊 Тестируем StorageManager.get()...');
+                            const progress = StorageManager.get(StorageManager.KEYS.PROGRESS);
+                            log(`✅ Получен прогресс: ${progress ? Object.keys(progress).length : 0} дисциплин`, 'success');
+                            
+                        } catch (e) {
+                            log(`❌ Ошибка инициализации StorageManager: ${e.message}`, 'error');
+                        }
+                        
+                    } else {
+                        log('❌ StorageManager не найден!', 'error');
+                    }
+                    
+                    // Тестируем calculateTotalProgress
+                    log('🧮 Тестируем calculateTotalProgress...');
+                    try {
+                        // Создаем мок-объект App для тестирования
+                        const testApp = {
+                            calculateTotalProgress: function() {
+                                const progress = StorageManager.get(StorageManager.KEYS.PROGRESS);
+                                let totalCards = 0;
+                                let knownCards = 0;
+                                
+                                Object.keys(DISCIPLINES_DATA).forEach(key => {
+                                    totalCards += DISCIPLINES_DATA[key].flashcards.length;
+                                    knownCards += progress[key].knownCards.length;
+                                });
+                                
+                                return Math.round((knownCards / totalCards) * 100);
+                            }
+                        };
+                        
+                        const totalProgress = testApp.calculateTotalProgress();
+                        log(`✅ calculateTotalProgress() вернул: ${totalProgress}%`, 'success');
+                        
+                    } catch (e) {
+                        log(`❌ Ошибка в calculateTotalProgress(): ${e.message}`, 'error');
+                        log(`Stack: ${e.stack}`, 'error');
+                    }
+                    
+                    log('🎯 Готов загружать основное приложение!', 'success');
+                    
+                } catch (error) {
+                    log(`❌ Критическая ошибка: ${error.message}`, 'error');
+                    log(`Stack: ${error.stack}`, 'error');
+                }
+            }
+            
+            loadScripts();
+            
+        } catch (e) {
+            log(`❌ Общая ошибка: ${e.message}`, 'error');
+        }
+        
+        setTimeout(() => {
+            log('⏰ Отладка завершена через 10 секунд');
+        }, 10000);
+        
+    </script>
+</body>
+</html>

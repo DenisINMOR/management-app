@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мини-тест дисциплины</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .discipline-card { 
+            border: 2px solid #007bff; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+        }
+        .discipline-card:hover { 
+            background: #f8f9fa; 
+            transform: translateY(-2px);
+        }
+        .btn { 
+            padding: 12px 24px; 
+            margin: 5px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .log { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            margin: 20px 0; 
+            border-radius: 5px; 
+            font-family: monospace; 
+            max-height: 300px; 
+            overflow-y: auto;
+        }
+        .alert { 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+        }
+        .alert-success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .alert-danger { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Мини-тест дисциплины</h1>
+        
+        <div class="alert alert-success">
+            <strong>Инструкция:</strong> Кликните по дисциплине ниже, чтобы протестировать кнопки "Тест" и "Зачет/Экзамен".
+        </div>
+
+        <div id="disciplines">
+            <div class="discipline-card" onclick="selectDiscipline('hr_management')">
+                <h3>👥 HR-практики</h3>
+                <p>Тип аттестации: <strong>ЭКЗАМЕН</strong></p>
+                <p>Кликните для тестирования кнопок</p>
+            </div>
+            
+            <div class="discipline-card" onclick="selectDiscipline('lean_manufacturing')">
+                <h3>🏭 Бережливое производство</h3>
+                <p>Тип аттестации: <strong>ЗАЧЕТ</strong></p>
+                <p>Кликните для тестирования кнопок</p>
+            </div>
+            
+            <div class="discipline-card" onclick="selectDiscipline('internet_marketing')">
+                <h3>🌐 Интернет-маркетинг</h3>
+                <p>Тип аттестации: <strong>ЭКЗАМЕН</strong></p>
+                <p>Кликните для тестирования кнопок</p>
+            </div>
+        </div>
+
+        <div id="discipline-detail" class="hidden">
+            <h2 id="discipline-title"></h2>
+            <p id="discipline-type"></p>
+            
+            <h3>Кнопки для тестирования:</h3>
+            <button class="btn btn-success" onclick="clickTestButton()">✅ Кнопка "Тест"</button>
+            <button class="btn btn-warning" onclick="clickCreditButton()">📝 Кнопка "Зачет/Экзамен"</button>
+            <button class="btn btn-primary" onclick="backToList()">← Назад к списку</button>
+        </div>
+
+        <div class="log" id="log">
+            <strong>📊 Логи диагностики:</strong><br>
+            Страница загружена. Готова к тестированию.
+        </div>
+
+        <div class="alert alert-danger">
+            <strong>🔍 Если кнопки не работают:</strong><br>
+            1. Откройте консоль браузера (F12)<br>
+            2. Проверьте наличие ошибок в JavaScript<br>
+            3. Убедитесь, что файл открыт через HTTP (не file://)
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let currentDiscipline = null;
+        let logs = [];
+        
+        // Данные дисциплин
+        const DISCIPLINES = {
+            'hr_management': {
+                name: 'HR-практики',
+                type: 'ЭКЗАМЕН',
+                icon: '👥'
+            },
+            'lean_manufacturing': {
+                name: 'Бережливое производство',
+                type: 'ЗАЧЕТ',
+                icon: '🏭'
+            },
+            'internet_marketing': {
+                name: 'Интернет-маркетинг',
+                type: 'ЭКЗАМЕН',
+                icon: '🌐'
+            }
+        };
+
+        // Симулятор App объекта (как в основном приложении)
+        window.App = {
+            loadDiscipline: function(disciplineId) {
+                log(`📖 loadDiscipline вызван с ID: ${disciplineId}`);
+                selectDiscipline(disciplineId);
+            },
+            startFinalTest: function(disciplineId) {
+                log(`🧪 startFinalTest вызван с ID: ${disciplineId}`);
+                showTestAlert(disciplineId);
+            },
+            showCreditInfo: function(disciplineId) {
+                log(`📋 showCreditInfo вызван с ID: ${disciplineId}`);
+                showCreditAlert(disciplineId);
+            }
+        };
+
+        // Функции логирования
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+            logs.push(entry);
+            
+            const logElement = document.getElementById('log');
+            logElement.innerHTML = `<strong>📊 Логи диагностики:</strong><br>` + logs.join('<br>');
+            
+            console.log(entry);
+        }
+
+        // Основные функции
+        function selectDiscipline(disciplineId) {
+            log(`🎯 Выбрана дисциплина: ${disciplineId}`);
+            
+            currentDiscipline = disciplineId;
+            const disc = DISCIPLINES[disciplineId];
+            
+            if (!disc) {
+                log(`❌ Дисциплина не найдена: ${disciplineId}`);
+                alert('Дисциплина не найдена!');
+                return;
+            }
+            
+            // Отображаем детали дисциплины
+            document.getElementById('discipline-title').textContent = `${disc.icon} ${disc.name}`;
+            document.getElementById('discipline-type').innerHTML = `<strong>Тип аттестации:</strong> ${disc.type}`;
+            
+            document.getElementById('disciplines').classList.add('hidden');
+            document.getElementById('discipline-detail').classList.remove('hidden');
+            
+            log(`✅ Дисциплина загружена: ${disc.name} (${disc.type})`);
+        }
+
+        function backToList() {
+            log('⬅️ Возврат к списку дисциплин');
+            currentDiscipline = null;
+            document.getElementById('discipline-detail').classList.add('hidden');
+            document.getElementById('disciplines').classList.remove('hidden');
+        }
+
+        function clickTestButton() {
+            log(`🖱️ Клик по кнопке "Тест"`);
+            
+            if (!currentDiscipline) {
+                log('❌ Дисциплина не выбрана');
+                alert('Сначала выберите дисциплину!');
+                return;
+            }
+            
+            // Вызываем функцию как в основном приложении
+            if (typeof App.startFinalTest === 'function') {
+                log(`📞 Вызываем App.startFinalTest('${currentDiscipline}')`);
+                App.startFinalTest(currentDiscipline);
+            } else {
+                log('❌ Функция App.startFinalTest не найдена');
+                alert('Функция startFinalTest не найдена!');
+            }
+        }
+
+        function clickCreditButton() {
+            log(`🖱️ Клик по кнопке "Зачет/Экзамен"`);
+            
+            if (!currentDiscipline) {
+                log('❌ Дисциплина не выбрана');
+                alert('Сначала выберите дисциплину!');
+                return;
+            }
+            
+            const disc = DISCIPLINES[currentDiscipline];
+            alert(`📝 Информация об аттестации:\n\nДисциплина: ${disc.name}\nТип: ${disc.type}\n\nЭта кнопка показывает информацию о типе сдачи для выбранной дисциплины.`);
+            log(`✅ Показана информация об аттестации: ${disc.type}`);
+        }
+
+        function showTestAlert(disciplineId) {
+            const disc = DISCIPLINES[disciplineId];
+            alert(`🧪 Запуск теста!\n\nДисциплина: ${disc.name}\nТип аттестации: ${disc.type}\n\nЭта функция должна запускать тест с вопросами.`);
+            log(`✅ Тест запущен для дисциплины: ${disciplineId}`);
+        }
+
+        function showCreditAlert(disciplineId) {
+            const disc = DISCIPLINES[disciplineId];
+            alert(`📋 Информация об аттестации:\n\nДисциплина: ${disc.name}\nТип: ${disc.type}`);
+            log(`✅ Показана информация об аттестации: ${disciplineId}`);
+        }
+
+        // Инициализация
+        window.addEventListener('load', function() {
+            log('🚀 Мини-приложение загружено и готово к тестированию');
+            log('✅ Глобальные объекты:');
+            log(`  - window.App: ${typeof window.App}`);
+            log(`  - window.DISCIPLINES: ${typeof DISCIPLINES}`);
+            log('🎯 Нажмите на любую дисциплину для начала тестирования');
+        });
+
+        // Обработка ошибок JavaScript
+        window.addEventListener('error', function(event) {
+            log(`❌ JavaScript ошибка: ${event.message} в файле ${event.filename}:${event.lineno}`);
+        });
+    </script>
+</body>
+</html>

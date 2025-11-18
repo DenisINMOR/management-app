@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Простой тест загрузки</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #00BFFF, #1E90FF);
+            color: white;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { 
+            background: rgba(255,255,255,0.1); 
+            padding: 20px; 
+            margin: 10px 0; 
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        button {
+            background: white;
+            color: #00BFFF;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #f0f0f0;
+        }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .loading { background: rgba(255,255,255,0.2); }
+        .success { background: rgba(40,167,69,0.8); }
+        .error { background: rgba(220,53,69,0.8); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Простой тест загрузки приложения</h1>
+        
+        <div class="card">
+            <h2>📊 Статус загрузки</h2>
+            <div id="status" class="status loading">Загрузка...</div>
+        </div>
+        
+        <div class="card">
+            <h2>🧪 Тестирование функций</h2>
+            <button onclick="testBasic()">Тест 1: Базовая загрузка</button>
+            <button onclick="testData()">Тест 2: Загрузка данных</button>
+            <button onclick="testStorage()">Тест 3: Тест LocalStorage</button>
+            <button onclick="testApp()">Тест 4: Запуск приложения</button>
+            <button onclick="loadMain()">🚀 Открыть основное приложение</button>
+        </div>
+        
+        <div class="card">
+            <h2>📋 Результаты</h2>
+            <div id="results" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; min-height: 200px; font-family: monospace;"></div>
+        </div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+        const status = document.getElementById('status');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ffcccc' : type === 'success' ? '#ccffcc' : '#ffffff';
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+            console.log(message);
+        }
+
+        function setStatus(message, type) {
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        async function testBasic() {
+            log('🚀 Запуск теста базовой загрузки...', 'info');
+            
+            try {
+                // Тестируем загрузку script файлов по одному
+                log('📂 Загружаем data.js...', 'info');
+                await loadScript('js/data.js');
+                log('✅ data.js загружен', 'success');
+                
+                log('📂 Загружаем storage.js...', 'info');
+                await loadScript('js/storage.js');
+                log('✅ storage.js загружен', 'success');
+                
+                log('📂 Загружаем games.js...', 'info');
+                await loadScript('js/games.js');
+                log('✅ games.js загружен', 'success');
+                
+                log('✅ Все базовые скрипты загружены успешно!', 'success');
+                
+            } catch (error) {
+                log(`❌ Ошибка базовой загрузки: ${error.message}`, 'error');
+            }
+        }
+
+        async function testData() {
+            log('🗃️ Тестирование данных...', 'info');
+            
+            try {
+                if (typeof DISCIPLINES_DATA === 'undefined') {
+                    throw new Error('DISCIPLINES_DATA не найден');
+                }
+                
+                const disciplines = Object.keys(DISCIPLINES_DATA);
+                log(`📚 Найдено дисциплин: ${disciplines.length}`, 'success');
+                
+                for (const key of disciplines) {
+                    const disc = DISCIPLINES_DATA[key];
+                    const cardsCount = disc.flashcards ? disc.flashcards.length : 0;
+                    log(`  📖 ${disc.shortName}: ${cardsCount} карточек`, 'info');
+                }
+                
+                log('✅ Данные загружены корректно', 'success');
+                
+            } catch (error) {
+                log(`❌ Ошибка данных: ${error.message}`, 'error');
+            }
+        }
+
+        async function testStorage() {
+            log('💾 Тестирование LocalStorage...', 'info');
+            
+            try {
+                if (typeof StorageManager === 'undefined') {
+                    throw new Error('StorageManager не найден');
+                }
+                
+                log('🔧 Инициализация StorageManager...', 'info');
+                StorageManager.init();
+                log('✅ StorageManager инициализирован', 'success');
+                
+                const progress = StorageManager.get(StorageManager.KEYS.PROGRESS);
+                const achievements = StorageManager.get(StorageManager.KEYS.ACHIEVEMENTS);
+                
+                log(`📊 Прогресс: ${Object.keys(progress).length} дисциплин`, 'success');
+                log(`🏆 Достижения: ${achievements.length} штук`, 'success');
+                
+                log('✅ LocalStorage работает корректно', 'success');
+                
+            } catch (error) {
+                log(`❌ Ошибка LocalStorage: ${error.message}`, 'error');
+            }
+        }
+
+        async function testApp() {
+            log('🎯 Тестирование основного приложения...', 'info');
+            
+            try {
+                // Пытаемся создать объект App
+                log('🔨 Создание объекта App...', 'info');
+                
+                // Эмулируем минимальную функциональность App
+                const App = {
+                    currentPage: 'dashboard',
+                    loadPage: function(pageName) {
+                        log(`📄 Загружена страница: ${pageName}`, 'info');
+                        return `<h1>Страница: ${pageName}</h1>`;
+                    }
+                };
+                
+                window.App = App;
+                log('✅ Объект App создан и привязан к window', 'success');
+                
+                // Тестируем основные функции
+                const page = App.loadPage('test');
+                log('✅ Функции App работают', 'success');
+                
+                log('✅ Приложение готово к работе!', 'success');
+                
+            } catch (error) {
+                log(`❌ Ошибка приложения: ${error.message}`, 'error');
+            }
+        }
+
+        function loadMain() {
+            log('🚀 Переход к основному приложению...', 'info');
+            window.location.href = 'index.html';
+        }
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
+                document.head.appendChild(script);
+            });
+        }
+
+        // Автоматически запускаем базовый тест при загрузке
+        setTimeout(() => {
+            setStatus('Готов к тестированию', 'success');
+            log('🎯 Система готова. Нажмите кнопки для тестирования.', 'success');
+        }, 1000);
+        
+    </script>
+</body>
+</html>

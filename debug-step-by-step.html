@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Детальная диагностика загрузки</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            margin: 0;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #333;
+            padding-left: 10px;
+        }
+        .error {
+            background: #330000;
+            border-left-color: #ff0000;
+        }
+        .success {
+            background: #003300;
+            border-left-color: #00ff00;
+        }
+        .warning {
+            background: #333300;
+            border-left-color: #ffff00;
+        }
+        .step {
+            font-weight: bold;
+            color: #ffaa00;
+        }
+        .code {
+            background: #000;
+            color: #00aaff;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Детальная диагностика загрузки приложения</h1>
+    <div id="log"></div>
+
+    <script>
+        const logContainer = document.getElementById('log');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        log('🚀 Начинаем детальную диагностику...', 'step');
+
+        // Этап 1: Проверка DOM
+        log('1️⃣ Проверка DOM элементов...', 'step');
+        
+        function checkDOM() {
+            const elements = {
+                'loading-screen': document.getElementById('loading-screen'),
+                'app': document.getElementById('app'),
+                'main-content': document.getElementById('main-content'),
+                'page-title': document.getElementById('page-title'),
+                'menu-btn': document.getElementById('menu-btn')
+            };
+            
+            for (const [name, element] of Object.entries(elements)) {
+                if (element) {
+                    log(`✅ ${name}: найден`, 'success');
+                } else {
+                    log(`❌ ${name}: НЕ НАЙДЕН!`, 'error');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Этап 2: Проверка загрузки скриптов
+        log('2️⃣ Проверка загрузки скриптов...', 'step');
+        
+        function checkScripts() {
+            const scripts = [
+                'js/data.js',
+                'js/storage.js', 
+                'js/games.js',
+                'js/app.js'
+            ];
+            
+            for (const script of scripts) {
+                try {
+                    // Проверяем, загрузился ли скрипт
+                    fetch(script)
+                        .then(response => response.text())
+                        .then(() => log(`✅ ${script}: файл доступен`, 'success'))
+                        .catch(error => log(`❌ ${script}: ошибка загрузки - ${error.message}`, 'error'));
+                } catch (error) {
+                    log(`❌ ${script}: ошибка проверки - ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Этап 3: Проверка переменных
+        log('3️⃣ Проверка глобальных переменных...', 'step');
+        
+        function checkVariables() {
+            const variables = [
+                'DISCIPLINES_DATA',
+                'StorageManager',
+                'App'
+            ];
+            
+            for (const variable of variables) {
+                if (typeof window[variable] !== 'undefined') {
+                    if (variable === 'DISCIPLINES_DATA') {
+                        const keys = Object.keys(window[variable]);
+                        log(`✅ ${variable}: найден, дисциплин: ${keys.length}`, 'success');
+                    } else if (variable === 'StorageManager') {
+                        log(`✅ ${variable}: найден, ключей: ${Object.keys(StorageManager.KEYS).length}`, 'success');
+                    } else {
+                        log(`✅ ${variable}: найден`, 'success');
+                    }
+                } else {
+                    log(`❌ ${variable}: НЕ НАЙДЕН!`, 'error');
+                }
+            }
+        }
+
+        // Этап 4: Проверка data.js
+        log('4️⃣ Проверка DISCIPLINES_DATA...', 'step');
+        
+        function checkDISCIPLINESData() {
+            if (typeof DISCIPLINES_DATA === 'undefined') {
+                log('❌ DISCIPLINES_DATA не определен!', 'error');
+                return false;
+            }
+            
+            try {
+                const keys = Object.keys(DISCIPLINES_DATA);
+                log(`✅ Найдено дисциплин: ${keys.length}`, 'success');
+                
+                // Проверим первые несколько дисциплин
+                for (let i = 0; i < Math.min(3, keys.length); i++) {
+                    const key = keys[i];
+                    const disc = DISCIPLINES_DATA[key];
+                    if (disc && disc.name && disc.shortName) {
+                        log(`✅ ${key}: ${disc.shortName}`, 'success');
+                    } else {
+                        log(`❌ ${key}: неполные данные`, 'error');
+                    }
+                }
+                
+                return true;
+            } catch (error) {
+                log(`❌ Ошибка при обработке DISCIPLINES_DATA: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Этап 5: Проверка StorageManager
+        log('5️⃣ Проверка StorageManager...', 'step');
+        
+        function checkStorageManager() {
+            if (typeof StorageManager === 'undefined') {
+                log('❌ StorageManager не определен!', 'error');
+                return false;
+            }
+            
+            try {
+                const testKey = 'test_key_' + Date.now();
+                StorageManager.set(testKey, { test: true });
+                const retrieved = StorageManager.get(testKey);
+                
+                if (retrieved && retrieved.test === true) {
+                    log('✅ StorageManager работает корректно', 'success');
+                    // Очистим тестовые данные
+                    localStorage.removeItem(testKey);
+                    return true;
+                } else {
+                    log('❌ StorageManager не работает корректно', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Ошибка StorageManager: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Этап 6: Проверка init() функции
+        log('6️⃣ Проверка функции App.init()...', 'step');
+        
+        function checkInit() {
+            if (typeof App === 'undefined' || !App.init) {
+                log('❌ App.init не определен!', 'error');
+                return false;
+            }
+            
+            try {
+                log('🔧 Запуск App.init()...', 'warning');
+                
+                // Запускаем init с оберткой try-catch
+                setTimeout(() => {
+                    try {
+                        App.init();
+                        log('✅ App.init() запущен без ошибок', 'success');
+                        
+                        // Подождем немного и проверим результат
+                        setTimeout(() => {
+                            const loadingScreen = document.getElementById('loading-screen');
+                            const app = document.getElementById('app');
+                            
+                            if (loadingScreen && loadingScreen.style.display === 'none') {
+                                log('✅ Экран загрузки скрыт', 'success');
+                            } else {
+                                log('❌ Экран загрузки все еще видимый!', 'error');
+                            }
+                            
+                            if (app && app.style.display === 'flex') {
+                                log('✅ Приложение показано', 'success');
+                            } else {
+                                log('❌ Приложение не показано!', 'error');
+                            }
+                        }, 2000);
+                        
+                    } catch (error) {
+                        log(`❌ Ошибка в App.init(): ${error.message}`, 'error');
+                        log(`Stack: ${error.stack}`, 'error');
+                    }
+                }, 1000);
+                
+                return true;
+            } catch (error) {
+                log(`❌ Ошибка при запуске App.init(): ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Этап 7: Ручной запуск компонентов
+        log('7️⃣ Ручной запуск компонентов...', 'step');
+        
+        function testComponents() {
+            try {
+                // Проверим renderDashboard
+                if (App && App.renderDashboard) {
+                    const dashboardHtml = App.renderDashboard();
+                    if (dashboardHtml && dashboardHtml.length > 0) {
+                        log('✅ App.renderDashboard() работает', 'success');
+                    } else {
+                        log('❌ App.renderDashboard() вернул пустой результат', 'error');
+                    }
+                }
+                
+                // Проверим loadPage
+                if (App && App.loadPage) {
+                    try {
+                        App.loadPage('dashboard');
+                        log('✅ App.loadPage("dashboard") работает', 'success');
+                    } catch (error) {
+                        log(`❌ Ошибка App.loadPage(): ${error.message}`, 'error');
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Ошибка при тестировании компонентов: ${error.message}`, 'error');
+            }
+        }
+
+        // Запуск диагностики
+        async function runDiagnostics() {
+            log('Начинаем диагностику...', 'step');
+            
+            // Проверяем DOM сразу
+            if (!checkDOM()) {
+                log('❌ КРИТИЧЕСКАЯ ОШИБКА: DOM элементы не найдены!', 'error');
+                return;
+            }
+            
+            // Проверяем скрипты (асинхронно)
+            checkScripts();
+            
+            // Даем время для загрузки скриптов
+            setTimeout(() => {
+                checkVariables();
+                checkDISCIPLINESData();
+                checkStorageManager();
+                checkInit();
+            }, 2000);
+            
+            setTimeout(() => {
+                testComponents();
+                log('🏁 Диагностика завершена!', 'step');
+            }, 5000);
+        }
+
+        // Запускаем диагностику
+        runDiagnostics();
+    </script>
+</body>
+</html>
